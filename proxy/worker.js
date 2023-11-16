@@ -5,8 +5,7 @@ const app = express(),
       server = require('http').createServer(app),
       bodyParser = require('body-parser'),
       db = require('./db'),
-      config = require('config'),
-      bots = require('./bots');
+      config = require('config');
 
 app.use(bodyParser.json());
 app.use('/', require('./routes'));
@@ -31,10 +30,7 @@ let rebuildCaches = () => {
 
 setInterval(() => rebuildCaches(), 10 * 60 * 1000);
 
-setInterval(bots.addBots, bots.BOTS_ADD_INTERVAL * 1000);
-
 server.listen(PORT, () => {
     console.log(`Server started on port ${PORT}...`);
-    bots.addBots();
     rebuildCaches();
 });

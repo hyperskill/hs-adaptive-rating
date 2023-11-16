@@ -17,12 +17,6 @@ const users = config.get('table_users');
 const getFirstArg = (r) => { return r[0]; }
 
 module.exports = {
-    addNonFakeUser: function (userId) {
-        return db.query(`
-                REPLACE INTO ${users.name} VALUES (?)
-        `, [userId]);
-    },
-
     updateRating: function (courseId, profileId, exp) {
         return db.query(`
                 INSERT INTO ${submissions.name}
@@ -34,24 +28,6 @@ module.exports = {
                         SELECT ? - IFNULL(SUM(${submissions.fields.exp}), 0) as ${submissions.fields.exp} FROM ${submissions.name} WHERE ${submissions.fields.courseId} = ? AND ${submissions.fields.profileId} = ?
                     ) a
                 ), NOW()`, [courseId, profileId, exp, courseId, profileId]);
-    },
-
-    /**
-    * @param courseId {number} - id of a course
-    * @param count {number} - max number of users you want to get
-    * @param {number} [delta] - if set period in days for which you want get top
-    * @return - array of top users like [{profile_id, exp, submissions.fields.timestamp }]
-    */
-    getTopForCourse: function (courseId, count, delta) {
-        delta = delta ? `AND ${submissions.fields.timestamp} >= DATE_SUB (NOW(), INTERVAL ${SqlString.escape(delta)} DAY)` : '';
-
-        return db.query(`
-            SELECT ${submissions.fields.profileId}, sum(${submissions.fields.exp}) as ${submissions.fields.exp}
-            FROM ${submissions.name}
-            WHERE ${submissions.fields.courseId} = ? ${delta}
-            GROUP BY ${submissions.fields.profileId}
-            ORDER BY ${submissions.fields.exp} DESC
-            LIMIT ?`, [courseId, count]).then(getFirstArg);
     },
 
     /**
